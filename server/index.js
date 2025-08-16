@@ -1,15 +1,13 @@
-// server/index.js
 import express from "express";
 import cors from "cors";
 import Sentiment from "sentiment";
 
 const app = express();
-app.use(cors());
+app.use(cors()); // or use { origin: "YOUR_FRONTEND_URL" } in production
 app.use(express.json());
 
 const sentiment = new Sentiment();
 
-// API route
 app.post("/api/comment", (req, res) => {
   try {
     const { text } = req.body;
@@ -22,7 +20,7 @@ app.post("/api/comment", (req, res) => {
 
     res.json({
       text,
-      score: result.score,         // sentiment score (-ve, +ve, 0)
+      score: result.score,
       comparative: result.comparative,
       tokens: result.tokens,
     });
@@ -31,4 +29,5 @@ app.post("/api/comment", (req, res) => {
   }
 });
 
-app.listen(5000, () => console.log("✅ Server running on http://localhost:5000"));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
