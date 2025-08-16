@@ -21,9 +21,23 @@ function App() {
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
-      <h2>📝 Feedback Sentiment Analyzer</h2>
+    <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
+      <h2>🎬 Movie Trailer + Feedback Sentiment Analyzer</h2>
 
+      {/* 🎥 Embedded YouTube Trailer */}
+      <div style={{ marginBottom: "20px", textAlign: "center" }}>
+        <iframe
+          width="100%"
+          height="400"
+          src="https://www.youtube.com/embed/YoHD9XEInc0" // Example: Inception Trailer
+          title="YouTube movie trailer"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </div>
+
+      <h3>📝 Leave Your Feedback</h3>
       <textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
