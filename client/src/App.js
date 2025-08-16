@@ -10,7 +10,7 @@ function App() {
     if (!comment.trim()) return;
 
     try {
-      const res = await axios.post("http://localhost:5000/api/comment", { text: comment });
+      const res = await axios.post("https://sentiment-analysis-project-afkl.onrender.com/comment", { text: comment });
       console.log("Response:", res.data); // ✅ Debugging
       setResults([...results, res.data]);
       setComment("");
