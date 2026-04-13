@@ -1,77 +1,98 @@
-import { useState } from "react";
-import axios from "axios";
-import SentimentChart from "./components/SentimentChart";
+import React, { useState } from 'react';
+import VideoInput from './components/VideoInput';
+import VideoInfo from './components/VideoInfo';
+import SentimentChart from './components/SentimentChart';
+import CommentList from './components/CommentList';
+import './App.css';
 
 function App() {
-  const [comment, setComment] = useState("");
-  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [result, setResult] = useState(null);
 
-  const handleSubmit = async () => {
-    if (!comment.trim()) return;
-
+  const handleAnalyze = async (url) => {
+    setLoading(true);
+    setError('');
+    setResult(null);
     try {
-     const res = await axios.post("https://sentiment-analysis-project-afkl.onrender.com/api/comment", { text: comment });
-
-      console.log("Response:", res.data); // ✅ Debugging
-      setResults([...results, res.data]);
-      setComment("");
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Analysis failed');
+      setResult(data);
     } catch (err) {
-      console.error("Error:", err);
-      alert("Failed to analyze comment");
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
-      <h2>🎬 Movie Trailer + Feedback Sentiment Analyzer</h2>
+    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2rem 1rem', fontFamily: 'sans-serif' }}>
+      <VideoInput onAnalyze={handleAnalyze} loading={loading} />
 
-      {/* 🎥 Embedded YouTube Trailer */}
-      <div style={{ marginBottom: "20px", textAlign: "center" }}>
-        <iframe
-          width="100%"
-          height="400"
-          src="https://www.youtube.com/embed/qeVfT2iLiu0
-" // Example: Inception Trailer
-          title="YouTube movie trailer"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
-      </div>
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#888' }}>
+          Fetching video data and analyzing comments...
+        </div>
+      )}
 
-      <h3>📝 Leave Your Feedback</h3>
-      <textarea
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        rows="4"
-        style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-        placeholder="Type your feedback here..."
-      />
+      {error && (
+        <div
+          style={{
+            background: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '8px',
+            padding: '1rem',
+            color: '#dc2626',
+            marginBottom: '1rem',
+          }}
+        >
+          {error}
+        </div>
+      )}
 
-      <button
-        onClick={handleSubmit}
-        style={{
-          padding: "10px 15px",
-          backgroundColor: "#1976D2",
-          color: "#fff",
-          border: "none",
-          cursor: "pointer",
-        }}
-      >
-        Submit
-      </button>
+      {result && (
+        <>
+          <VideoInfo meta={result.videoMeta} />
+          <div
+            style={{
+              background: '#fff',
+              border: '1px solid #eee',
+              borderRadius: '12px',
+              padding: '1.25rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <SentimentChart
+              summary={result.sentimentSummary}
+              comments={result.comments}
+            />
+            {result.message && (
+              <p style={{ color: '#888', textAlign: 'center' }}>{result.message}</p>
+            )}
+          </div>
 
-      <h3 style={{ marginTop: "20px" }}>📊 Sentiment Chart</h3>
-      <SentimentChart data={results} />
-
-      <h3 style={{ marginTop: "20px" }}>📋 Submitted Feedback</h3>
-      <ul>
-        {results.map((r, i) => (
-          <li key={i}>
-            <strong>{r.text}</strong> → Score: {r.score}
-          </li>
-        ))}
-      </ul>
+          {result.comments.length > 0 && (
+            <div
+              style={{
+                background: '#fff',
+                border: '1px solid #eee',
+                borderRadius: '12px',
+                padding: '1.25rem',
+              }}
+            >
+              <h4 style={{ margin: '0 0 1rem', fontWeight: 500 }}>
+                Comments ({result.comments.length})
+              </h4>
+              <CommentList comments={result.comments} />
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
